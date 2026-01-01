@@ -828,8 +828,8 @@
 						
 				const edges = new THREE.EdgesGeometry(new THREE.SphereGeometry(
 					sphereDiameter*1.1, 
-					Math.floor(qualitySettings.sphereSegments/1.5), 
-					Math.floor(qualitySettings.sphereSegments/1.5/2)
+					Math.floor(48/1.5), 
+					Math.floor(48/1.5/2)
 				));
 				const outline = new THREE.LineSegments(
 					edges,
@@ -1269,6 +1269,8 @@
 					counter = 0; Lock = false;
 					if (play_online) connection.send({action:"refresh"});
 					document.getElementById('apply-settings').click();
+					document.getElementById("control-panel").classList.toggle("open");
+					document.getElementById("panel-activator").classList.toggle("open");
 				}
 			});
 			
