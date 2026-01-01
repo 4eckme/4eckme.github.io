@@ -1,1 +1,9 @@
-# 4eckme.github.io
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      .body{background:#000;margin:0;padding:0;}
+    </style>
+  </head>
+  <body></body>
+</html>
