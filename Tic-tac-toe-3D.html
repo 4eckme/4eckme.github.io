@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 	<head>
@@ -129,13 +130,18 @@
 			.slider-container {
 				display: flex;
 				align-items: center;
-				gap: 10px;
+				gap: 0px;
+				margin: 10px 0 20px 0;
 			}
 			
 			.slider-value {
 				color: #fff;
-				min-width: 40px;
+				min-width: 30px;
 				font-size: 14px;
+				float: right;
+				font-weight: bold;
+				color: #ffffff;
+				text-align:right;
 			}
 			
 			input[type="range"] {
@@ -428,34 +434,34 @@
 				<div class="control-title">Настройки поля</div>
 				
 				<div class="control-item">
+					<span class="slider-value" id="field-size-value">4</span>
 					<label class="control-label">Размерность поля:</label>
 					<div class="slider-container">
 						<input type="range" id="field-size" min="3" max="10" step="1" value="4">
-						<span class="slider-value" id="field-size-value">4</span>
 					</div>
 				</div>
 				
 				<div class="control-item">
+					<span class="slider-value" id="win-line-value">4</span>
 					<label class="control-label">Длинна выигрыша:</label>
 					<div class="slider-container">
 						<input type="range" id="win-line" min="3" max="10" step="1" value="4">
-						<span class="slider-value" id="win-line-value">4</span>
 					</div>
 				</div>
 				
 				<div class="control-item">
+					<span class="slider-value" id="sphere-diameter-value">16</span>
 					<label class="control-label">Диаметр сфер:</label>
 					<div class="slider-container">
 						<input type="range" id="sphere-diameter" min="5" max="30" step="1" value="16">
-						<span class="slider-value" id="sphere-diameter-value">16</span>
 					</div>
 				</div>
 				
 				<div class="control-item">
+					<span class="slider-value" id="step-size-value">50</span>
 					<label class="control-label">Размер шага:</label>
 					<div class="slider-container">
 						<input type="range" id="step-size" min="30" max="100" step="5" value="50">
-						<span class="slider-value" id="step-size-value">50</span>
 					</div>
 				</div>
 				
