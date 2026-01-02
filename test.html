@@ -1,0 +1,1352 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>Tic-tac-toe 3D: Bubbles Environment</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<link type="text/css" rel="stylesheet" href="./three.js-dev/examples/main.css">
+		<script src="peerjs.min.js"></script>
+		<style>
+		
+			.loader {
+			  width: 85px;
+			  height: 35px;
+			  --g1:conic-gradient(from  90deg at 3px  3px ,#0000 90deg,#fff 0);
+			  --g2:conic-gradient(from -90deg at 22px 22px,#0000 90deg,#fff 0);
+			  background:var(--g1),var(--g1),var(--g1), var(--g2),var(--g2),var(--g2);
+			  background-size: 25px 25px;
+			  background-repeat: no-repeat;
+			  animation: l6 1s infinite alternate;
+			  filter: invert(1);
+			  margin-bottom: 30px;
+			  margin-top: 5px;
+			}
+			@keyframes l6 {
+			  0%   {background-position:0 50% ,50% 50% ,100% 50% }
+			  20%  {background-position:0 0   ,50% 50% ,100% 50% }
+			  40%  {background-position:0 100%,50%  0  ,100% 50% }
+			  60%  {background-position:0 50% ,50% 100%,100% 0   }
+			  80%  {background-position:0 50% ,50% 50% ,100% 100%}
+			  100% {background-position:0 50% ,50% 50% ,100% 50% }
+			}
+		
+			.hidden{display:none !important;}
+			.grayscale{
+				filter: grayscale(1);
+			}
+		
+			/* Стили для всплывающей панели */
+			#control-panel {
+				position: fixed;
+				left: -250px;
+				top: 0;
+				width: 250px;
+				height: 100%;
+				background: rgba(0, 0, 0, 0.75);
+				transition: left 0.3s ease;
+				z-index: 1000;
+				padding: 20px;
+				box-sizing: border-box;
+				overflow: hidden;
+				border-right: 2px solid #000;
+			}
+			
+			#control-panel:hover {
+				left: 0;
+			}
+			
+			#control-panel::after {
+				content: '⚙️';
+				position: absolute;
+				right: -40px;
+				top: 20px;
+				background: rgba(30, 30, 30, 0.95);
+				width: 40px;
+				height: 40px;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				font-size: 20px;
+				border-radius: 0 5px 5px 0;
+				cursor: pointer;
+				box-shadow: 2px 0 5px rgba(0,0,0,0.3);
+				z-index: 1001;
+			}
+			
+			/* Создаем зону для активации панели */
+			#panel-activator {
+				position: fixed;
+				left: 0;
+				top: 0;
+				width: 20px;
+				height: 100%;
+				z-index: 999;
+				background: transparent;
+			}
+			
+			#panel-activator:hover ~ #control-panel {
+				left: 0;
+			}
+			
+			.control-group {
+				margin-bottom: 25px;
+				padding-bottom: 15px;
+				border-bottom: 1px solid #444;
+			}
+			
+			.control-group:last-child {
+				border-bottom: none;
+			}
+			
+			.control-title {
+				color: #fff;
+				font-size: 16px;
+				margin-bottom: 10px;
+				font-weight: bold;
+			}
+			
+			.control-item {
+				margin-bottom: 15px;
+			}
+			
+			.control-label {
+				display: block;
+				color: #ccc;
+				margin-bottom: 5px;
+				font-size: 14px;
+			}
+			
+			.control-input {
+				width: 100%;
+				padding: 8px;
+				background: rgba(255,255,255,0.1);
+				border: 1px solid #555;
+				border-radius: 4px;
+				color: #fff;
+				font-size: 14px;
+			}
+			
+			.slider-container {
+				display: flex;
+				align-items: center;
+				gap: 10px;
+			}
+			
+			.slider-value {
+				color: #fff;
+				min-width: 40px;
+				font-size: 14px;
+			}
+			
+			input[type="range"] {
+				flex: 1;
+				height: 6px;
+				background: #555;
+				border-radius: 3px;
+				outline: none;
+				-webkit-appearance: none;
+			}
+			
+			input[type="range"]::-webkit-slider-thumb {
+				-webkit-appearance: none;
+				width: 18px;
+				height: 18px;
+				background: #4CAF50;
+				border-radius: 50%;
+				cursor: pointer;
+			}
+			
+			input[type="range"]::-moz-range-thumb {
+				width: 18px;
+				height: 18px;
+				background: #4CAF50;
+				border-radius: 50%;
+				cursor: pointer;
+				border: none;
+			}
+			
+			.button {
+				width: 100%;
+				padding: 12px;
+				background: #4CAF50;
+				color: white;
+				border: none;
+				border-radius: 4px;
+				cursor: pointer;
+				font-size: 16px;
+				font-weight: bold;
+				transition: background 0.3s;
+				margin-top: 10px;
+			}
+			
+			.button:hover {
+				background: #45a049;
+			}
+			
+			.button.refresh {
+				background: #eee;
+				color: #000;
+			}
+			.button.refresh:hover {
+				background: #ccc;
+			}
+			.button.fullscreen {
+				background: #c31c1c;
+			}
+			
+			.button.fullscreen:hover {
+				background: #a01717;
+			}
+			
+			.button.online {
+				background: #2196F3;
+			}
+			
+			.button.online:hover {
+				background: #1976D2;
+			}
+			.stats {
+				color: #fff;
+				font-size: 14px;
+				margin-top: 20px;
+				padding: 10px;
+				background: rgba(0,0,0,0.3);
+				border-radius: 4px;
+			}
+			
+			.wait {
+				width: 40%;
+				height: 20%;
+				left: 30%;
+				top: 40%;
+				border-radius: 64px;
+				color: #000;
+				font-size: 32px;
+				text-align: center;
+				background: #fff;
+				z-index: 1000;
+				position: absolute;
+			}
+			.wait span {margin:40px;display:inline-block;}
+			
+			.wait {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    margin: 0 auto;
+    color: white;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    min-height: 300px;
+}
+
+.wait span {
+	font-size: 28px;
+    font-weight: 300;
+    letter-spacing: 0.5px;
+    text-align: center;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    color: #000;
+    font-weight: bold !important;
+    line-height: 0;
+    margin: 10px 0 40px 0;
+}
+
+.wait input[type="text"] {
+    width: 100%;
+    max-width: 500px;
+    padding: 15px 20px;
+    font-size: 16px;
+    border-radius: 50px;
+    background: #efeda6;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    color: #000000;
+    transition: all 0.3s ease;
+    outline: none;
+    text-align: center;
+    margin-bottom: 20px;
+    border: 2px solid #4a99b3;
+	max-width: 70%;
+}
+
+.wait input[type="text"]:focus {
+    background: white;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+}
+
+.wait button {
+    padding: 15px 40px;
+    font-size: 16px;
+    font-weight: 600;
+    color: white;
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+	background: #444;
+    color: #fff;
+	margin: 0 20px;
+}
+
+.wait button#button-cancel{
+    background: #d42222;
+}
+
+.wait button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+
+}
+
+.wait button:active {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.wait button:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+}
+
+
+/* Адаптивность */
+@media (max-width: 640px) {
+    .wait {
+        padding: 30px 20px;
+        margin: 20px;
+        min-height: 250px;
+    }
+    
+    .wait span {
+        font-size: 22px;
+    }
+    
+    .wait input[type="text"] {
+        padding: 12px 15px;
+        font-size: 14px;
+    }
+    
+    .wait button {
+        padding: 12px 30px;
+        font-size: 14px;
+    }
+}
+			
+			/* Обновляем стиль контейнера для трехмерной сцены */
+			#container {
+				position: fixed;
+				left: 0;
+				top: 0;
+				width: 100% !important;
+				height: 100% !important;
+				z-index: 1;
+				transition: filter 0.5s ease;
+			}
+			
+			/* Скрываем панель на очень маленьких экранах */
+			@media (max-width: 768px) {
+				#control-panel {
+					transition: top 0.5s ease;
+					width:100%;
+					left:0;
+					top:-100%;
+					/* width: 200px; */
+					/* left: -200px; */
+				}
+				
+				#control-panel.open {
+					overflow-y: auto;
+					left: 0 !important;
+					width: 100% !important;
+					height: 100%;
+					top: 0;
+				}
+				
+				#control-panel::after {
+					right: -35px;
+					width: 35px;
+				}
+				
+				#panel-activator {
+					/* width: 15px; */
+					width: 100%;
+					height: 10%;
+					z-index: 10000 !important;
+					position: fixed !important;
+				}
+				
+				#panel-activator.open {
+					bottom: 0 !important;
+					top: 90%;
+				}
+				
+				.control-group:last-child{
+					margin-bottom:10%;
+				}
+			}
+		</style>
+	</head>
+	<body>
+		<div class="wait hidden" id="wait"><span>Ожидание подключения</span>
+		<div id="loader" class="loader"></div>
+		<input id="invite-link" class="hidden" type="text" value="" disabled><div><button id="button-copy" class="hidden">Скопировать</button><button id="button-cancel">Отмена</button></div></div>
+		<!-- Зона активации панели -->
+		<div id="panel-activator"></div>
+		
+		<!-- Панель управления -->
+		<div id="control-panel">
+		
+			<div class="control-group">
+				<!-- div class="control-title">Играть онлайн</div -->
+				<button class="button refresh" id="refresh-btn">Обновить игру</button>
+			</div>		
+		
+			<div class="control-group">
+				<div class="control-title">Настройки поля</div>
+				
+				<div class="control-item">
+					<label class="control-label">Размерность поля:</label>
+					<div class="slider-container">
+						<input type="range" id="field-size" min="3" max="10" step="1" value="4">
+						<span class="slider-value" id="field-size-value">4</span>
+					</div>
+				</div>
+				
+				<div class="control-item">
+					<label class="control-label">Длинна выигрыша:</label>
+					<div class="slider-container">
+						<input type="range" id="win-line" min="3" max="10" step="1" value="4">
+						<span class="slider-value" id="win-line-value">4</span>
+					</div>
+				</div>
+				
+				<div class="control-item">
+					<label class="control-label">Диаметр сфер:</label>
+					<div class="slider-container">
+						<input type="range" id="sphere-diameter" min="5" max="30" step="1" value="16">
+						<span class="slider-value" id="sphere-diameter-value">16</span>
+					</div>
+				</div>
+				
+				<div class="control-item">
+					<label class="control-label">Размер шага:</label>
+					<div class="slider-container">
+						<input type="range" id="step-size" min="30" max="100" step="5" value="50">
+						<span class="slider-value" id="step-size-value">50</span>
+					</div>
+				</div>
+				
+				<button class="button" id="apply-settings">Применить настройки</button>
+			</div>
+			
+			<div class="control-group">
+				<div class="control-title">Управление видом</div>
+				<button class="button fullscreen" id="fullscreen-btn">Полноэкранный режим</button>
+			</div>
+			
+			<div class="control-group">
+				<div class="control-title">Играть онлайн</div>
+				<button class="button online" id="online-btn">Пригласить в игру</button>
+			</div>
+		</div>
+
+		<div id="container"></div>
+
+		<script type="importmap">
+			{
+				"imports": {
+					"three": "./three.js-dev/build/three.module.js",
+					"three/addons/": "./three.js-dev/examples/jsm/"
+				}
+			}
+		</script>
+
+		<script type="module">
+
+			import * as THREE from 'three';
+			import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+			import { UltraHDRLoader } from 'three/addons/loaders/UltraHDRLoader.js';
+			
+			let chars='abcdefghijklmnopqrstuvwxyz';
+			function encode(number) {
+				return chars[number-3];
+			}
+			function decode(character) {
+				return chars.indexOf(character)+3;
+			}
+			
+			
+			let GameOver = false;
+			
+			let Lock = false; 
+			
+			let connection;
+			let connected = false;
+			let disconnected = false;
+			let play_online = false;
+			let my_peer_ID;
+			let peer = new Peer({
+				host: 'peerjs-server.herokuapp.com',
+				port: 443,
+				secure: true,
+				config: {
+					iceServers: [
+						{ urls: 'stun:stun.l.google.com:19302' },
+						{ 
+							urls: 'turn:openrelay.metered.ca:80',
+							username: 'openrelayproject',
+							credential: 'openrelayproject'
+						}
+					]
+				}
+			});
+			
+			
+			let map = []
+
+			let vectors = [
+				{x:0, y:0,z:1},
+				{x:0, y:1,z:0},
+				{x:1, y:0,z:0},
+
+				{x:0, y:1, z:1},
+				{x:1, y:0, z:1},
+				{x:1, y:1, z:0},
+				
+				{x:0, y:1, z:-1},
+				{x:1, y:0, z:-1},
+				{x:1, y:-1, z:0},
+				
+				{x:1, y:1, z:1},
+				
+				{x:1, y:1, z:-1},
+				{x:1, y:-1, z:1},
+				{x:-1, y:1, z:1},
+			];
+
+			function vmult(vector, n) {
+				return {
+					x: vector.x*n,
+					y: vector.y*n,
+					z: vector.z*n
+				}
+			}
+
+			function vsum(pos, vector) {
+				return {
+					x: pos.x+vector.x,
+					y: pos.y+vector.y,
+					z: pos.z+vector.z
+				}
+			}
+			
+			function vcheck(pos) {
+				return (pos.x>=0&&pos.y>=0&&pos.z>=0 && pos.x<map.length&&pos.y<map.length&&pos.z<map.length)
+			}
+
+			function checkline(pos, vector, limit) {
+
+				var record = 1;	
+				var color = map[pos.x][pos.y][pos.z].color;
+				for (var i = 1; i<limit; i++){
+					var ivector = vmult(vector, i);
+					var nextpos = vsum(pos, ivector)
+					if (!vcheck(nextpos)) break;
+					var nextcolor = map[nextpos.x][nextpos.y][nextpos.z].color;
+					if (color === nextcolor) record++;
+					else break;
+				}	
+				
+				for (var i = -1; i>-limit; i--){
+					var ivector = vmult(vector, i);
+					var nextpos = vsum(pos, ivector)
+					if (!vcheck(nextpos)) break;
+					var nextcolor = map[nextpos.x][nextpos.y][nextpos.z].color;
+					if (color === nextcolor) record++;
+					else break;
+				}
+				
+				
+				
+				if (record >= limit) {
+					highlight_line(pos, vector);
+					//highlight(mesh, 0xffffff, pos, vector);
+					return true;
+				}
+				else return false;
+			}
+
+			function checklines(pos, limit) {
+
+				for (var i=0; i<vectors.length; i++) {
+					if (checkline(pos, vectors[i], limit)) {
+						GameOver = true;
+						return true;
+					}
+				}
+			}
+			
+			
+			function getHash() {
+				return window.location.hash.substring(1);
+			}
+			
+			let camera, scene, renderer;
+			let raycaster = new THREE.Raycaster();
+			let mouse = new THREE.Vector2();
+			
+			let counter = 0;
+			let zoom = (window.innerWidth > window.innerHeight) ? 450 : 800;
+			
+			// Параметры поля
+			let fieldSize = 4; // размерность поля (default 4)
+			let winLine = 4; // длинна выйгрыша
+			let stepSize = 50.0; // размер шага между сферами
+			let sphereDiameter = 16; // диаметр сфер
+			let spheres = []; // массив для хранения всех сфер
+			
+			// Буферы для состояний материалов
+			let instanceStates = [];
+			
+			// Текстуры
+			let hdrEquirect;
+			
+			// Материалы
+			let glassMaterial, blackMaterial, whiteMaterial;
+			
+			// Параметры для материалов
+			const params = {
+				color: 0xffffff,
+				transmission: 1,
+				opacity: 1,
+				metalness: 0,
+				roughness: 0,
+				ior: 1.5,
+				specularIntensity: 1,
+				specularColor: 0xffffff,
+				envMapIntensity: 1,
+				exposure: 1
+			};
+
+			// Добавляем флаг для низкопроизводительных устройств
+			const isLowEndDevice = () => {
+				return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+				       navigator.hardwareConcurrency < 4 ||
+				       (navigator.deviceMemory && navigator.deviceMemory < 4);
+			};
+
+			// Функция для настройки качества в зависимости от устройства
+			const getQualitySettings = () => {
+				if (isLowEndDevice()) {
+					return {
+						sphereSegments: 24,
+						textureSize: 0,
+						enableShadows: false,
+						antialias: false,
+						pixelRatio: window.devicePixelRatio
+					};
+				}
+				return {
+					sphereSegments: 48,
+					textureSize: 1024,
+					enableShadows: true,
+					antialias: true,
+					pixelRatio: window.devicePixelRatio
+				};
+			};
+
+			const qualitySettings = getQualitySettings();
+
+			// Функция для создания поля сфер
+			function createSphereField() {
+				// Удаляем старые сферы
+				spheres.forEach(sphere => {
+					scene.remove(sphere);
+					if (sphere.geometry) sphere.geometry.dispose();
+					if (sphere.material) sphere.material.dispose();
+				});
+				spheres = [];
+				instanceStates = [];
+				
+				// Создаем геометрию сферы
+				const geometry = new THREE.SphereGeometry(
+					sphereDiameter, 
+					qualitySettings.sphereSegments, 
+					Math.floor(qualitySettings.sphereSegments / 2)
+				);
+				geometry.computeBoundingSphere();
+				
+				
+				let instanceId = 0;
+				const offset = (fieldSize - 1) * stepSize / 2;
+				
+				// Создаем сферы в сетке
+				map = []
+				for(let x = 0; x < fieldSize; x++) {
+					map.push([]);
+					for(let y = 0; y < fieldSize; y++) {
+						map[x].push([]);
+						for(let z = 0; z < fieldSize; z++) {
+							map[x][y].push({x:x,y:y,z:z,color:"glass"});
+							const mesh = new THREE.Mesh(geometry, glassMaterial.clone());
+							scene.add(mesh);
+							
+							
+							
+							// Позиционируем сферу
+							const posX = x * stepSize - offset;
+							const posY = y * stepSize - offset;
+							const posZ = z * stepSize - offset;
+							mesh.position.set(posX, posY, posZ);
+							
+							// Сохраняем данные
+							mesh.userData.instanceId = instanceId;
+							mesh.userData.info = map[x][y][z];
+							instanceStates[instanceId] = 0; // Начинаем со стекла
+							
+							// Оптимизация
+							mesh.frustumCulled = true;
+							mesh.castShadow = qualitySettings.enableShadows;
+							mesh.receiveShadow = false;
+							
+							spheres.push(mesh);
+							instanceId++;
+						}
+					}
+				}
+				
+				// Удаляем геометрию после использования
+				geometry.dispose();
+				
+				// Обновляем рендер
+				render();
+			}
+
+			hdrEquirect = new UltraHDRLoader()
+				.setPath( './' )
+				.load( 'golden_gate_hills_4k.jpg', function ( texture ) {
+					
+					console.log('Texture loaded:', texture);
+					
+					hdrEquirect = texture;
+					hdrEquirect.mapping = THREE.EquirectangularReflectionMapping;
+
+					init();
+					render();
+
+				}, undefined, function ( error ) {
+					console.error('Error loading HDR:', error);
+					// Создаем градиентную текстуру как запасной вариант
+					const size = 512;
+					const data = new Uint8Array(size * size * 3);
+					for (let i = 0; i < size * size; i++) {
+						const stride = i * 3;
+						data[stride] = 100;     // R
+						data[stride + 1] = 150; // G
+						data[stride + 2] = 200; // B
+					}
+					hdrEquirect = new THREE.DataTexture(data, size, size, THREE.RGBFormat);
+					hdrEquirect.mapping = THREE.EquirectangularReflectionMapping;
+					
+					init();
+					render();
+				} );
+				
+			
+			function initMaterials() {
+				// Создаем стеклянный материал
+				glassMaterial = new THREE.MeshPhysicalMaterial( {
+					color: params.color,
+					metalness: params.metalness,
+					roughness: params.roughness,
+					ior: params.ior,
+					envMap: hdrEquirect,
+					envMapIntensity: params.envMapIntensity,
+					transmission: 1,
+					specularIntensity: params.specularIntensity,
+					specularColor: params.specularColor,
+					opacity: params.opacity,
+					side: THREE.DoubleSide,
+					transparent: false,
+					depthWrite: true,
+					depthTest: true
+				} );
+				
+				blackMaterial = new THREE.MeshPhysicalMaterial( {
+					color: 0x000000,
+					ior: params.ior,
+					metalness: 0.2,
+					roughness: 0.2,
+					envMap: hdrEquirect,
+					envMapIntensity: params.envMapIntensity,
+					transmission: 0,
+					specularIntensity: params.specularIntensity,
+					specularColor: params.specularColor,
+					opacity: params.opacity,
+					side: THREE.DoubleSide,
+					transparent: false
+				} );
+					
+				whiteMaterial = new THREE.MeshPhysicalMaterial( {
+					color: 0xffffff,
+					metalness: 0.25,
+					roughness: 0.25,
+					ior: params.ior,
+					envMap: hdrEquirect,
+					envMapIntensity: params.envMapIntensity,
+					transmission: 0,
+					specularIntensity: params.specularIntensity,
+					specularColor: params.specularColor,
+					opacity: params.opacity,
+					side: THREE.DoubleSide,
+					transparent: false			
+				} );
+			}
+			
+			
+			function highlight_line(pos, vector) {
+				var color = map[pos.x][pos.y][pos.z].color
+				for (var i=1; i<map.length; i++) {
+					var p = vsum(pos,vmult(vector, i));
+					//console.log(vcheck(p) , (map[p.x][p.y][p.z].color==color))
+					//if (vcheck(p)) console.log("color", map[p.x][p.y][p.z].color);
+					
+					if (vcheck(p) && map[p.x][p.y][p.z].color===color) {
+						scene.traverse((object) => {
+							if (object.isMesh) {
+								var step = object.userData.info;
+								if (step.x === p.x && step.y === p.y && step.z === p.z) {
+									highlight(object, color, 0.5);
+								}
+							}
+						});
+					}
+				}
+				for (var i=1; i<map.length; i++) {
+					var p = vsum(pos,vmult(vector, -i));
+					//console.log(vcheck(p) , (map[p.x][p.y][p.z].color==color))
+					//if (vcheck(p)) console.log("color", map[p.x][p.y][p.z].color);
+					
+					if (vcheck(p) && map[p.x][p.y][p.z].color===color) {
+						scene.traverse((object) => {
+							if (object.isMesh) {
+								var step = object.userData.info;
+								if (step.x === p.x && step.y === p.y && step.z === p.z) {
+									highlight(object, color, 0.5);
+								}
+							}
+						});
+					}
+				}
+			}
+			
+			function remove_highlight() {
+				scene.traverse((object) => {
+					if (object.isLineSegments) {
+					  object.parent.remove(object);
+					}
+				});
+			}
+			
+			function highlight(mesh, color, opacity) {
+			
+				if (color === "black") color = 0xffffff;
+				else if (color === "white") color = 0x000000;
+						
+				const edges = new THREE.EdgesGeometry(new THREE.SphereGeometry(
+					sphereDiameter*1.1, 
+					Math.floor(48/1.5), 
+					Math.floor(48/1.5/2)
+				));
+				const outline = new THREE.LineSegments(
+					edges,
+					new THREE.LineBasicMaterial({ 
+						color: color, 
+						linewidth: 0.1,
+						opacity: opacity,
+						transparent: 0.5
+					})
+				);
+				mesh.add(outline);
+			}
+			
+			function toggleMaterial(mesh, instanceId, info) {
+			
+				//alert("couner"+counter);
+			
+				if (GameOver) return;
+			
+				const currentState = instanceStates[instanceId];
+				let newState;
+				
+				console.log(info);
+				console.log(winLine);
+				
+				var highlight_color = 0x88ff44;
+				
+				// Цикл материалов: glass -> white -> black -> glass
+				if ((info.color === "glass") && (counter % 2 === 0)) { // glass
+					newState = 1; // white
+					instanceStates[instanceId]=newState;
+					mesh.material = whiteMaterial;
+					map[info.x][info.y][info.z].color = info.color = "white";
+					counter++;
+					remove_highlight();
+					highlight(mesh, info.color, 0.5)
+					//if (play_online && counter > 0) Lock = !Lock;
+					if (checklines(info, parseInt(winLine))) {
+					
+					}
+				} else if (info.color === "glass") { // white
+					newState = 2; // black
+					instanceStates[instanceId]=newState;
+					mesh.material = blackMaterial;
+					map[info.x][info.y][info.z].color = info.color = "black";
+					counter++;
+					remove_highlight()
+					highlight(mesh, info.color, 0.5) 
+					//if (play_online && counter > 0) Lock = !Lock;
+					if (checklines(info, parseInt(winLine))) {
+					
+					}
+				} else { // black
+					//newState = 0; // glass
+					//mesh.material = glassMaterial;
+				}
+				
+		
+				
+				//instanceStates[instanceId] = newState;
+				//instanceNeedsUpdate[instanceId] = 1;
+
+				
+				// Обновляем рендер
+				render();
+			}
+			
+			
+			function onDocumentMouseClick(event) {
+			
+				if (Lock) return;
+			
+				// Преобразуем координаты мыши
+				mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+				mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+				
+				// Обновляем луч
+				raycaster.setFromCamera(mouse, camera);
+				
+				// Проверяем пересечения со сферами
+				const intersects = raycaster.intersectObjects(scene.children);
+				
+				if (intersects.length > 0) {
+					const object = intersects[0].object;
+					// Ищем ID экземпляра в userData
+					if (object.userData.instanceId !== undefined) {
+						if (connected) {
+							var step = {
+								x: object.userData.info.x,
+								y: object.userData.info.y,
+								z: object.userData.info.z
+							}; connection.send(step);
+						}
+						toggleMaterial(object, object.userData.instanceId, object.userData.info);
+						if(play_online) Lock = true;
+					}
+				}
+			}
+			
+			// Функция для переключения полноэкранного режима
+			function toggleFullscreen() {
+				if (!document.fullscreenElement) {
+					document.documentElement.requestFullscreen().catch(err => {
+						console.log(`Error attempting to enable fullscreen: ${err.message}`);
+					});
+				} else {
+					if (document.exitFullscreen) {
+						document.exitFullscreen();
+					}
+				}
+			}
+			
+			// Функция для обновления значений слайдеров
+			function updateSliderValues() {
+				document.getElementById('field-size-value').textContent = fieldSize;
+				document.getElementById('win-line-value').textContent = winLine;
+				document.getElementById('step-size-value').textContent = stepSize;
+				document.getElementById('sphere-diameter-value').textContent = sphereDiameter;
+				
+				document.getElementById('field-size').value = fieldSize;
+				document.getElementById('win-line').value = winLine;
+				document.getElementById('step-size').value = stepSize;
+				document.getElementById('sphere-diameter').value = sphereDiameter;
+			}
+		
+			function init() {
+				renderer = new THREE.WebGLRenderer({ 
+					antialias: true,
+					powerPreference: "high-performance"
+				});
+				renderer.setPixelRatio(qualitySettings.pixelRatio);
+				renderer.setSize(window.innerWidth, window.innerHeight);
+				renderer.shadowMap.enabled = qualitySettings.enableShadows;
+				renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+				document.getElementById("container").appendChild(renderer.domElement);
+
+				renderer.toneMapping = THREE.ACESFilmicToneMapping;
+				renderer.toneMappingExposure = params.exposure;
+				
+				// Оптимизации рендерера
+				renderer.outputEncoding = THREE.sRGBEncoding;
+				renderer.sortObjects = true;
+
+				scene = new THREE.Scene();
+
+				camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 1, 2000);
+				camera.position.set(0, 0, zoom);
+
+				scene.background = hdrEquirect;
+				
+				// Инициализируем материалы
+				initMaterials();
+				
+				// Создаем поле сфер
+				createSphereField();
+				
+				// Добавляем освещение
+				if (isLowEndDevice()) {
+					const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+					scene.add(ambientLight);
+				} else {
+					const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+					scene.add(ambientLight);
+					
+					const directionalLight = new THREE.DirectionalLight(0xffffff, 0.6);
+					directionalLight.position.set(100, 100, 50);
+					directionalLight.castShadow = true;
+					scene.add(directionalLight);
+				}
+				
+				// Добавляем обработчик кликов
+				renderer.domElement.addEventListener('mousedown', onDocumentMouseClick, false);
+				
+				// Добавляем touch события для мобильных устройств
+				renderer.domElement.addEventListener('touchstart', function(event) {
+					event.preventDefault();
+					if (event.touches.length === 1) {
+						const touch = event.touches[0];
+						mouse.x = (touch.clientX / window.innerWidth) * 2 - 1;
+						mouse.y = -(touch.clientY / window.innerHeight) * 2 + 1;
+						
+						raycaster.setFromCamera(mouse, camera);
+						const intersects = raycaster.intersectObjects(scene.children);
+						
+						if (intersects.length > 0) {
+							const object = intersects[0].object;
+							if (object.userData.instanceId !== undefined) {
+								toggleMaterial(object, object.userData.instanceId, object.userData.info);
+							}
+						}
+					}
+				}, { passive: false });
+
+				const controls = new OrbitControls(camera, renderer.domElement);
+				controls.addEventListener('change', render);
+				controls.minDistance = zoom/2;
+				controls.maxDistance = zoom*3;
+				
+				window.addEventListener('resize', onWindowResize);
+				
+				// Обновляем значения слайдеров
+				updateSliderValues();
+				
+				// Добавляем обработчики для элементов управления
+				document.getElementById('fullscreen-btn').addEventListener('click', toggleFullscreen);
+				
+				document.getElementById('apply-settings').addEventListener('click', function() {
+					fieldSize = parseInt(document.getElementById('field-size').value);
+					winLine = parseInt(document.getElementById('win-line').value);
+					stepSize = parseInt(document.getElementById('step-size').value);
+					sphereDiameter = parseInt(document.getElementById('sphere-diameter').value);
+					
+					document.getElementById("invite-link").value = window.location.href+"#"+my_peer_ID+'@'+encode(fieldSize)+encode(winLine);
+					
+					// Обновляем отображение значений
+					updateSliderValues();
+					
+					// Пересоздаем поле с новыми параметрами
+					createSphereField();
+					
+					counter = 0;
+				});
+				
+				// Обновляем отображение значений слайдеров при их изменении
+				document.getElementById('field-size').addEventListener('input', function() {
+					document.getElementById('field-size-value').textContent = this.value;
+				});
+				
+				document.getElementById('win-line').addEventListener('input', function() {
+					document.getElementById('win-line-value').textContent = this.value;
+				});
+				
+				document.getElementById('step-size').addEventListener('input', function() {
+					document.getElementById('step-size-value').textContent = this.value;
+				});
+				
+				document.getElementById('sphere-diameter').addEventListener('input', function() {
+					document.getElementById('sphere-diameter-value').textContent = this.value;
+				});
+				
+				// Обработчик изменения полноэкранного режима
+				document.addEventListener('fullscreenchange', function() {
+					onWindowResize();
+				});
+			}
+
+			function onWindowResize() {
+				const width = window.innerWidth;
+				const height = window.innerHeight;
+
+				camera.aspect = width / height;
+				camera.updateProjectionMatrix();
+
+				renderer.setSize(width, height);
+				render();
+			}
+
+			function render() {
+				renderer.render(scene, camera);
+			}
+
+			// Добавляем обработчик для приостановки рендеринга при скрытии вкладки
+			document.addEventListener('visibilitychange', function() {
+				if (document.hidden) {
+					// Останавливаем анимацию или снижаем частоту кадров
+					if (renderer && renderer.animate) {
+						renderer.animate = false;
+					}
+				} else {
+					// Возобновляем рендеринг
+					if (renderer) {
+						renderer.animate = true;
+						render();
+					}
+				}
+			});
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			function handler(data) {
+				if(data.action === "refresh"){
+					alert("Соперник обновил игру.");
+					counter = 0;
+					Lock = false;
+					//connection.send({action:"refresh"});
+					document.getElementById('apply-settings').click();
+					return;
+				}
+			
+				console.log(data);
+				scene.traverse((object) => {
+					if (object.isMesh) {
+						var step = object.userData.info;
+						if (step.x === data.x && step.y === data.y && step.z === data.z) {
+							toggleMaterial(object, object.userData.instanceId, object.userData.info);
+							if (play_online) Lock = false
+						}
+					}
+				});
+			}
+
+			peer.on('open', function(id) {
+				
+				console.log('My peer ID is: ' + id);
+				my_peer_ID = id;
+				document.getElementById("invite-link").value = window.location.href+"#"+my_peer_ID+'@'+encode(fieldSize)+encode(winLine);
+				
+				document.getElementById("invite-link").classList.remove("hidden")
+				document.getElementById("button-copy").classList.remove("hidden")
+				document.getElementById("loader").classList.add("hidden")
+				
+				var hash = getHash().split('@')
+				var peer_id = hash[0];
+				var hash_data = hash[1];
+				
+				if (hash.length === 2 && hash_data.length === 2) {
+					document.getElementById('field-size').value=decode(hash_data[0]);
+					document.getElementById('win-line').value=decode(hash_data[1]);
+					document.getElementById('apply-settings').click();
+				}
+				
+				if (peer_id && peer_id.length > 0 && !connected) {
+					
+					console.log("Trying to connect to: " + peer_id);
+					
+					var conn = peer.connect(peer_id);
+					connection = conn;
+					
+					connection.on('open', function(){
+						connected = true;
+						play_online = true;
+						
+						console.log('Connection opened');
+						
+						connection.on('iceStateChanged', (state) => {
+							if (!disconnected && state != "connected") {
+								alert("Соперник отключился.")
+								Lock = true;
+								disconnected = true;
+							}
+						});
+					});
+					
+					// Добавьте обработчики
+					connection.on('data', function(data) {
+						handler(data);
+						//console.log('Received:', data);
+					});
+					
+					connection.on('error', function(err) {
+						alert('error');
+						console.log('Connection error:', err);
+					});
+					
+					
+				} else if (!connected) {
+					console.log('Waiting for incoming connections...');
+					
+					peer.on('connection', function(conn) {
+						
+						connection = conn;
+						
+						console.log("Incoming connection from:", conn.peer);
+						
+						connection.on('open', function() {
+							connected = true;
+							play_online = true;
+							
+							document.getElementById('apply-settings').click();
+							
+							console.log('Incoming connection opened');
+							returnToGame();
+							
+							connection.on('iceStateChanged', (state) => {
+								if (!disconnected && state != "connected") {
+									alert("Соперник отключился.")
+									Lock = true;
+									disconnected = true;
+								}
+							});
+						});
+						
+						connection.on('data', function(data) {
+							handler(data);
+							//console.log('Received from', conn.peer, ':', data);
+							// Можете ответить:
+							//conn.send('Got your message: ' + data);
+						});
+						
+						connection.on('error', function(err) {
+							alert('error');
+							console.log('Incoming connection error:', err);
+						});
+						
+						
+					});
+				}
+			});
+
+			peer.on('error', function(err) {
+				console.error('Peer error:', err);
+			});
+			
+			function blockClick(e) {
+			  e.preventDefault();
+			  e.stopPropagation();
+			}
+
+			function blockMouseDown(e) {
+			  e.preventDefault();
+			  e.stopPropagation();
+			}
+			
+			function returnToGame() {
+				document.getElementById("container").classList.remove("grayscale");
+				document.getElementById("wait").classList.add("hidden");
+
+				//document.removeEventListener('click', blockClick, true);
+				document.removeEventListener('mousedown', blockClick, true);
+			}
+			
+			
+			document.getElementById('online-btn').addEventListener("click", function() {
+				
+				document.getElementById("container").classList.add("grayscale");
+				document.getElementById("wait").classList.remove("hidden");
+				
+				// Block mouse events
+				//document.addEventListener('click', blockClick, true);
+				document.addEventListener('mousedown', blockClick, true);
+				
+				//document.removeEventListener('click', blockClick, true);
+				//document.removeEventListener('mousedown', blockClick, true);
+			});
+			
+			document.getElementById('button-cancel').addEventListener("click", function() {
+				returnToGame();				
+			});
+			
+			document.getElementById('refresh-btn').addEventListener("click", function() {
+				if (confirm("Вы хотите начать заново?")) {
+					if (disconnected) {
+						play_online = false;
+						disconnected = false;
+					}
+					counter = 0; Lock = false;
+					if (play_online) connection.send({action:"refresh"});
+					document.getElementById('apply-settings').click();
+					document.getElementById("control-panel").classList.toggle("open");
+					document.getElementById("panel-activator").classList.toggle("open");
+				}
+			});
+			
+			document.getElementById('button-copy').addEventListener("click", function() {
+				var text=document.getElementById('invite-link').value;
+				try {
+					navigator.clipboard.writeText(text);
+					alert("Ссылка для приглашения скопирована.")
+					//return true;
+				} catch (err) {
+					alert("Не получилось скопировать ссылку.")
+					//return false;
+				}
+			});
+				
+			document.getElementById("panel-activator").addEventListener("click", function() {
+				document.getElementById("control-panel").classList.toggle("open");
+				document.getElementById("panel-activator").classList.toggle("open");
+			});
+			
+
+		</script>
+	</body>
+</html>
