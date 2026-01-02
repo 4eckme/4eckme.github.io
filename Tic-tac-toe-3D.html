@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 	<head>
@@ -402,13 +401,18 @@
 				.control-group:last-child{
 					margin-bottom:10%;
 				}
+				
+				.loader {
+				    margin: 38px;
+					margin-bottom: 41px;
+				}
 			}
 		</style>
 	</head>
 	<body>
 		<div class="wait hidden" id="wait"><span>Ожидание подключения</span>
 		<div id="loader" class="loader"></div>
-		<input id="invite-link" class="hidden" type="text" value="" disabled><div><button id="button-copy" class="hidden">Скопировать</button><button id="button-cancel">Отмена</button></div></div>
+		<input id="invite-link" class="hidden" type="text" value="" disabled><div style="width:100%"><button id="button-copy" class="hidden">Скопировать</button><button id="button-cancel">Отмена</button></div></div>
 		<!-- Зона активации панели -->
 		<div id="panel-activator"></div>
 		
