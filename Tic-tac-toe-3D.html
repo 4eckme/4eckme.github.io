@@ -7,6 +7,29 @@
 		<link type="text/css" rel="stylesheet" href="./three.js-dev/examples/main.css">
 		<script src="peerjs.min.js"></script>
 		<style>
+		
+			.loader {
+			  width: 85px;
+			  height: 35px;
+			  --g1:conic-gradient(from  90deg at 3px  3px ,#0000 90deg,#fff 0);
+			  --g2:conic-gradient(from -90deg at 22px 22px,#0000 90deg,#fff 0);
+			  background:var(--g1),var(--g1),var(--g1), var(--g2),var(--g2),var(--g2);
+			  background-size: 25px 25px;
+			  background-repeat: no-repeat;
+			  animation: l6 1s infinite alternate;
+			  filter: invert(1);
+			  margin-bottom: 30px;
+			  margin-top: 5px;
+			}
+			@keyframes l6 {
+			  0%   {background-position:0 50% ,50% 50% ,100% 50% }
+			  20%  {background-position:0 0   ,50% 50% ,100% 50% }
+			  40%  {background-position:0 100%,50%  0  ,100% 50% }
+			  60%  {background-position:0 50% ,50% 100%,100% 0   }
+			  80%  {background-position:0 50% ,50% 50% ,100% 100%}
+			  100% {background-position:0 50% ,50% 50% ,100% 50% }
+			}
+		
 			.hidden{display:none !important;}
 			.grayscale{
 				filter: grayscale(1);
@@ -372,7 +395,9 @@
 		</style>
 	</head>
 	<body>
-		<div class="wait hidden" id="wait"><span>Ожидание подключения</span><input id="invite-link" type="text" value="" disabled><div><button id="button-copy">Скопировать</button><button id="button-cancel">Отмена</button></div></div>
+		<div class="wait hidden" id="wait"><span>Ожидание подключения</span>
+		<div id="loader" class="loader"></div>
+		<input id="invite-link" class="hidden" type="text" value="" disabled><div><button id="button-copy" class="hidden">Скопировать</button><button id="button-cancel">Отмена</button></div></div>
 		<!-- Зона активации панели -->
 		<div id="panel-activator"></div>
 		
@@ -1147,6 +1172,10 @@
 				console.log('My peer ID is: ' + id);
 				my_peer_ID = id;
 				document.getElementById("invite-link").value = window.location.href+"#"+my_peer_ID+'@'+encode(fieldSize)+encode(winLine);
+				
+				document.getElementById("invite-link").classList.remove("hidden")
+				document.getElementById("button-copy").classList.remove("hidden")
+				document.getElementById("loader").classList.add("hidden")
 				
 				var hash = getHash().split('@')
 				var peer_id = hash[0];
