@@ -630,7 +630,7 @@
 				return window.location.hash.substring(1);
 			}
 			
-			let camera, scene, renderer;
+			let camera, scene, renderer, controls;
 			let raycaster = new THREE.Raycaster();
 			let mouse = new THREE.Vector2();
 			
@@ -1089,8 +1089,8 @@
 					}
 				}, { passive: false });
 
-				const controls = new OrbitControls(camera, renderer.domElement);
-				controls.addEventListener('change', render);
+				controls = new OrbitControls(camera, renderer.domElement);
+				//controls.addEventListener('change', render);
 				controls.minDistance = zoom/2;
 				controls.maxDistance = zoom*3;
 				
@@ -1170,7 +1170,7 @@
 					this.fpsElement = document.createElement('div');
 					this.fpsElement.style.position = 'fixed';
 					this.fpsElement.style.top = '10px';
-					this.fpsElement.style.left = '10px';
+					this.fpsElement.style.right = '10px';
 					this.fpsElement.style.color = 'white';
 					this.fpsElement.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
 					this.fpsElement.style.padding = '5px 10px';
@@ -1212,7 +1212,10 @@
 				fpsCounter.update();
 				
 				// ваша отрисовка
-				if (renderer !== undefined) renderer.render(scene, camera);
+				if (renderer !== undefined && controls !== undefined) {
+					controls.update();
+					renderer.render(scene, camera);
+				}
 				
 				requestAnimationFrame(animate);
 			}
