@@ -1005,6 +1005,7 @@
 						document.exitFullscreen();
 					}
 				}
+				document.getElementById("panel-activator").click();
 			}
 			
 			// Функция для обновления значений слайдеров
@@ -1116,6 +1117,8 @@
 					createSphereField();
 					
 					counter = 0;
+
+					document.getElementById("panel-activator").click();
 				});
 				
 				// Обновляем отображение значений слайдеров при их изменении
@@ -1336,7 +1339,8 @@
 				// Block mouse events
 				//document.addEventListener('click', blockClick, true);
 				document.addEventListener('mousedown', blockClick, true);
-				
+
+				document.getElementById("panel-activator").click();
 				//document.removeEventListener('click', blockClick, true);
 				//document.removeEventListener('mousedown', blockClick, true);
 			});
