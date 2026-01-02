@@ -1144,7 +1144,7 @@
 					// Пересоздаем поле с новыми параметрами
 					createSphereField();
 					
-					counter = 0;
+					counter = 0; Lock = false; GameOver = false;
 
 					document.getElementById("panel-activator").click();
 				});
@@ -1219,8 +1219,7 @@
 			function handler(data) {
 				if(data.action === "refresh"){
 					alert("Соперник обновил игру.");
-					counter = 0;
-					Lock = false;
+					counter = 0; Lock = false; GameOver = false;
 					//connection.send({action:"refresh"});
 					document.getElementById('apply-settings').click();
 					return;
@@ -1383,7 +1382,7 @@
 						play_online = false;
 						disconnected = false;
 					}
-					counter = 0; Lock = false;
+					counter = 0; Lock = false; GameOver = false;
 					if (play_online) connection.send({action:"refresh"});
 					document.getElementById('apply-settings').click();
 					document.getElementById("control-panel").classList.toggle("open");
