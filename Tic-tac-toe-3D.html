@@ -465,6 +465,7 @@
 			
 			let connection;
 			let connected = false;
+			let disconnected = false;
 			let play_online = false;
 			let my_peer_ID;
 			let peer = new Peer({
@@ -1164,27 +1165,32 @@
 					var conn = peer.connect(peer_id);
 					connection = conn;
 					
-					conn.on('open', function(){
+					connection.on('open', function(){
 						connected = true;
 						play_online = true;
 						
 						console.log('Connection opened');
-						//conn.send({x:1,y:1,z:1});
+						
+						connection.on('iceStateChanged', (state) => {
+							if (!disconnected && state != "connected") {
+								alert("Соперник отключился.")
+								Lock = true;
+								disconnected = true;
+							}
+						});
 					});
 					
 					// Добавьте обработчики
-					conn.on('data', function(data) {
+					connection.on('data', function(data) {
 						handler(data);
 						//console.log('Received:', data);
 					});
 					
-					conn.on('error', function(err) {
-						console.error('Connection error:', err);
+					connection.on('error', function(err) {
+						alert('error');
+						console.log('Connection error:', err);
 					});
 					
-					conn.on('close', function() {
-						console.log('Connection closed');
-					});
 					
 				} else if (!connected) {
 					console.log('Waiting for incoming connections...');
@@ -1195,7 +1201,7 @@
 						
 						console.log("Incoming connection from:", conn.peer);
 						
-						conn.on('open', function() {
+						connection.on('open', function() {
 							connected = true;
 							play_online = true;
 							
@@ -1203,22 +1209,29 @@
 							
 							console.log('Incoming connection opened');
 							returnToGame();
+							
+							connection.on('iceStateChanged', (state) => {
+								if (!disconnected && state != "connected") {
+									alert("Соперник отключился.")
+									Lock = true;
+									disconnected = true;
+								}
+							});
 						});
 						
-						conn.on('data', function(data) {
+						connection.on('data', function(data) {
 							handler(data);
 							//console.log('Received from', conn.peer, ':', data);
 							// Можете ответить:
 							//conn.send('Got your message: ' + data);
 						});
 						
-						conn.on('error', function(err) {
-							console.error('Incoming connection error:', err);
+						connection.on('error', function(err) {
+							alert('error');
+							console.log('Incoming connection error:', err);
 						});
 						
-						conn.on('close', function() {
-							console.log('Connection closed');
-						});
+						
 					});
 				}
 			});
@@ -1265,6 +1278,10 @@
 			
 			document.getElementById('refresh-btn').addEventListener("click", function() {
 				if (confirm("Вы хотите начать заново?")) {
+					if (disconnected) {
+						play_online = false;
+						disconnected = false;
+					}
 					counter = 0; Lock = false;
 					if (play_online) connection.send({action:"refresh"});
 					document.getElementById('apply-settings').click();
