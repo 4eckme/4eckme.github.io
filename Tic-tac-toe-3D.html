@@ -675,7 +675,7 @@
 			let instanceStates = [];
 			
 			// Текстуры
-			let hdrEquirect;
+			let hdrEquirect, hdrEquirect4k;
 			
 			// Материалы
 			let glassMaterial, blackMaterial, whiteMaterial;
@@ -788,17 +788,54 @@
 				render();
 			}
 
-			hdrEquirect = new UltraHDRLoader()
-				.setPath( './' )
-				.load( 'golden_gate_hills_4k.jpg', function ( texture ) {
+			var hdrLoader = new UltraHDRLoader().setPath( './' );
+			hdrLoader.load( 'golden_gate_hills_4k.jpg', function ( texture ) {
+			
+					console.log('Texture loaded:', texture);
+					
+					hdrEquirect4k = texture;
+					hdrEquirect4k.mapping = THREE.EquirectangularReflectionMapping;
+			
+			
+					hdrLoader.load( 'golden_gate_hills_256x128.jpg', function ( texture ) {
+							
+							console.log('Texture loaded:', texture);
+							
+							hdrEquirect = texture;
+							hdrEquirect.mapping = THREE.EquirectangularReflectionMapping;
+
+							init();
+							render();
+
+						}, undefined, function ( error ) {
+							console.error('Error loading HDR:', error);
+							// Создаем градиентную текстуру как запасной вариант
+							const size = 512;
+							const data = new Uint8Array(size * size * 3);
+							for (let i = 0; i < size * size; i++) {
+								const stride = i * 3;
+								data[stride] = 100;     // R
+								data[stride + 1] = 150; // G
+								data[stride + 2] = 200; // B
+							}
+							hdrEquirect = new THREE.DataTexture(data, size, size, THREE.RGBFormat);
+							hdrEquirect.mapping = THREE.EquirectangularReflectionMapping;
+							
+							init();
+							render();
+						} )
+						
+			}, undefined, function ( error ) { console.log('Error load 4k texture.')} );
+				/*
+			hdrLoader.load( 'golden_gate_hills_4k.jpg', function ( texture ) {
 					
 					console.log('Texture loaded:', texture);
 					
-					hdrEquirect = texture;
-					hdrEquirect.mapping = THREE.EquirectangularReflectionMapping;
+					hdrEquirect2 = texture;
+					hdrEquirect2.mapping = THREE.EquirectangularReflectionMapping;
 
-					init();
-					render();
+					//init();
+					//render();
 
 				}, undefined, function ( error ) {
 					console.error('Error loading HDR:', error);
@@ -811,12 +848,14 @@
 						data[stride + 1] = 150; // G
 						data[stride + 2] = 200; // B
 					}
-					hdrEquirect = new THREE.DataTexture(data, size, size, THREE.RGBFormat);
-					hdrEquirect.mapping = THREE.EquirectangularReflectionMapping;
+					hdrEquirect2 = new THREE.DataTexture(data, size, size, THREE.RGBFormat);
+					hdrEquirect2.mapping = THREE.EquirectangularReflectionMapping;
 					
 					init();
 					render();
-				} );
+				} )
+				*/
+				;
 				
 			
 			function initMaterials() {
@@ -1072,7 +1111,7 @@
 				camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 1, 2000);
 				camera.position.set(0, 0, zoom);
 
-				scene.background = hdrEquirect;
+				scene.background = hdrEquirect4k;
 				
 				// Инициализируем материалы
 				initMaterials();
