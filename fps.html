@@ -727,7 +727,7 @@
 						map[x].push([]);
 						for(let z = 0; z < fieldSize; z++) {
 							map[x][y].push({x:x,y:y,z:z,color:"glass"});
-							const mesh = new THREE.Mesh(geometry, glassMaterial.clone());
+							const mesh = new THREE.Mesh(geometry, glassMaterial);
 							scene.add(mesh);
 							
 							
@@ -1459,6 +1459,7 @@
 		</script>
 	</body>
 </html>
+
 
 
 
